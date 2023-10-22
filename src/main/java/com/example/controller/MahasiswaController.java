@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.example.model.Mahasiswa;
 
 @Controller
-
 public class MahasiswaController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -25,6 +24,15 @@ public class MahasiswaController {
         return "index";
     }
 
+    @GetMapping("/detail/{nim}")
+    public String detail(@PathVariable("nim") String nim, Model model) {
+        String sql = "SELECT * FROM mahasiswa WHERE nim = ?";
+        // Menggunakan queryForObject karena kita hanya mengambil satu mahasiswa
+        Mahasiswa mahasiswa = jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(Mahasiswa.class), nim);
+        model.addAttribute("mahasiswa", mahasiswa);
+        return "detail";
+    }
+
     @GetMapping("/add")
     public String add(Model model) {
         return "add";
@@ -34,7 +42,7 @@ public class MahasiswaController {
     public String add(Mahasiswa mahasiswa) {
         String sql = "INSERT INTO mahasiswa VALUES(?,?,?,?,?,?)";
         jdbcTemplate.update(sql, mahasiswa.getNim(), mahasiswa.getNama(), mahasiswa.getAngkatan(),
-                mahasiswa.getGender(), mahasiswa.getNo_tlp(), mahasiswa.getAsal_daerah());
+                mahasiswa.getGender(), mahasiswa.getAsal_daerah(), mahasiswa.getNo_tlp());
         return "redirect:/";
     }
 
@@ -48,9 +56,9 @@ public class MahasiswaController {
 
     @PostMapping("/edit")
     public String edit(Mahasiswa mahasiswa) {
-        String sql = "UPDATE mahasiswa SET nama = ?,angkatan = ?, gender = ?,No_tlp = ?, asal_daerah = ? WHERE nim = ?";
-        jdbcTemplate.update(sql, mahasiswa.getNama(), mahasiswa.getAngkatan(), mahasiswa.getGender(),
-                mahasiswa.getNo_tlp(), mahasiswa.getAsal_daerah(), mahasiswa.getNim());
+        String sql = "UPDATE mahasiswa SET nama = ?, angkatan = ?, gender = ?, asal_daerah = ?, no_telepon = ? WHERE nim = ?";
+        jdbcTemplate.update(sql, mahasiswa.getNim(), mahasiswa.getNama(), mahasiswa.getAngkatan(),
+                mahasiswa.getGender(), mahasiswa.getAsal_daerah(), mahasiswa.getNo_tlp());
         return "redirect:/";
     }
 
@@ -58,20 +66,6 @@ public class MahasiswaController {
     public String delete(@PathVariable("nim") String nim) {
         String sql = "DELETE FROM mahasiswa WHERE nim = ?";
         jdbcTemplate.update(sql, nim);
-        return "redirect:/";
-    }
-
-    @GetMapping("/detail/{nim}")
-    public String detail(@PathVariable("nim") String nim, Model model) {
-        String sql = "SELECT * FROM mahasiswa WHERE nim = ?";
-        Mahasiswa mahasiswa = jdbcTemplate.queryForObject(sql,
-                BeanPropertyRowMapper.newInstance(Mahasiswa.class), nim);
-        model.addAttribute("mahasiswa", mahasiswa);
-        return "detail";
-    }
-
-    @PostMapping("/detail")
-    public String detail(Model model) {
         return "redirect:/";
     }
 }
